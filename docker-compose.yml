@@ -1,0 +1,48 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: construction-backend
+    ports:
+      - "3000:3000"
+    environment:
+      POSTGRES_URL: postgresql://postgres:postgres@postgres:5432/construction_db
+    depends_on:
+      - postgres
+    networks:
+      - construction-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: construction-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: construction_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - construction-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: construction-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - construction-network
+    restart: unless-stopped
+
+networks:
+  construction-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
